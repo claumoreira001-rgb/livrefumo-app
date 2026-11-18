@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#064e3b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>LivreFumo PRO — Desafio 30 Dias e Além</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonte Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Biblioteca de Confetes -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: {
+                            950: '#050a09',
+                            900: '#0a1412',
+                            800: '#11221e',
+                            700: '#1a332d',
+                        },
+                        emeraldpro: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                        },
+                        goldpro: {
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Estilos Nativos Mobile-First & Micro-interações */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #050a09;
+            color: #f8fafc;
+            overscroll-behavior-y: none;
+        }
+        .glass-card {
+            background: rgba(17, 34, 30, 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(52, 211, 153, 0.14);
+        }
+        .glass-gold {
+            background: linear-gradient(145deg, rgba(245, 158, 11, 0.14), rgba(17, 34, 30, 0.85));
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.88); opacity: 0.6; }
+            60% { transform: scale(1.06); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .day-btn {
+            transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+            user-select: none;
+        }
+        .day-btn:active {
+            transform: scale(0.92);
+        }
+        /* Animação do Círculo de Respiração SOS 4-7-8 */
+        .breath-circle {
+            transition: transform 4s ease-in-out, box-shadow 4s ease-in-out, background-color 1s ease;
+        }
+        /* Barra de rolagem discreta */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a1412;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1a332d;
+            border-radius: 9999px;
+        }
+        /* Safe Area para Smartphones Android/iOS */
+        .pb-safe {
+            padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
+        }
+        .nav-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center selection:bg-emeraldpro-500 selection:text-white">
+
+    <!-- Container Mobile-First Centralizado (Adapta-se perfeitamente em Celular, Tablet e Desktop) -->
+    <div class="w-full max-w-2xl min-h-screen flex flex-col relative bg-obsidian-950 shadow-2xl border-x border-emeraldpro-900/30">
+
+        <!-- Notificações Toast -->
+        <div id="toast-container" class="fixed top-16 left-1/2 -translate-x-1/2 z-[70] flex flex-col gap-2 w-full max-w-md px-4 pointer-events-none"></div>
+
+        <!-- ============================================================== -->
+        <!-- CABEÇALHO SUPERIOR FIXO (APP BAR)                              -->
+        <!-- ============================================================== -->
+        <header class="sticky top-0 z-30 bg-obsidian-950/90 backdrop-blur-lg border-b border-emeraldpro-900/40 px-4 py-3 flex items-center justify-between">
+            <!-- Logotipo (Toque 5x abre o Painel Secreto do Criador/Vendedor) -->
+            <div id="app-logo-trigger" onclick="handleLogoTap()" class="flex items-center gap-2.5 cursor-pointer select-none">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emeraldpro-500 to-emeraldpro-700 flex items-center justify-center shadow-lg shadow-emeraldpro-950 border border-emeraldpro-400/30">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-extrabold text-base tracking-tight text-white">LivreFumo</span>
+                        <span id="header-badge" class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-500/20 text-goldpro-400 border border-goldpro-400/30">
+                            PRÉVIA
+                        </span>
+                    </div>
+                    <p id="header-subtitle" class="text-[11px] text-emeraldpro-400/80 font-medium">Jornada de 1 Ano • 365 Dias</p>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas: Botão SOS Fissura + Botão Desbloquear PRO -->
+            <div class="flex items-center gap-2">
+                <button onclick="openSosModal()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 text-xs font-bold transition-all active:scale-95">
+                    <i data-lucide="wind" class="w-4 h-4 text-rose-400"></i>
+                    <span>SOS Fissura</span>
+                </button>
+
+                <button id="header-unlock-btn" onclick="openPaywallModal('header')" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-goldpro-500 to-amber-600 text-obsidian-950 text-xs font-extrabold shadow-lg shadow-amber-950/50 transition-all active:scale-95">
+                    <i data-lucide="crown" class="w-3.5 h-3.5"></i>
+                    <span>Liberar PRO</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Banner de Status Freemium (Visível apenas enquanto não estiver ativado) -->
+        <div id="freemium-banner" onclick="openPaywallModal('banner')" class="bg-gradient-to-r from-amber-500/15 via-emeraldpro-900/40 to-amber-500/15 border-b border-goldpro-400/25 px-4 py-2.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-amber-500/20 transition-colors">
+            <div class="flex items-center gap-2 text-xs">
+                <i data-lucide="eye" class="w-4 h-4 text-goldpro-400 shrink-0"></i>
+                <span class="text-slate-200">
+                    <strong class="text-goldpro-400">Modo Prévia Gratuita:</strong> Primeiros 3 dias do seu mês inicial liberados para teste.
+                </span>
+            </div>
+            <span class="text-[11px] font-extrabold text-goldpro-400 whitespace-nowrap underline">
+                Desbloquear Tudo →
+            </span>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- CORPO PRINCIPAL COM 4 ABAS DE NAVEGAÇÃO NATIVA                 -->
+        <!-- ============================================================== -->
+        <main class="flex-1 px-4 pt-4 pb-safe space-y-5 overflow-y-auto">
+
+            <!-- ========================================================== -->
+            <!-- ABA 1: CALENDÁRIO INTERATIVO & META 30 DIAS                -->
+            <!-- ========================================================== -->
+            <section id="view-calendar" class="space-y-5">
+
+                <!-- Card Principal da Meta de 30 Dias -->
+                <div class="glass-card rounded-3xl p-5 relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-emeraldpro-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emeraldpro-400 bg-emeraldpro-500/10 px-2.5 py-1 rounded-full border border-emeraldpro-500/20">
+                                <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+                                Meta Principal: 30 Dias
+                            </span>
+                            <div class="flex items-baseline gap-2 mt-2">
+                                <span id="stat-goal-days" class="text-4xl font-black text-white tracking-tight">0</span>
+                                <span class="text-base font-bold text-slate-400">/ 30 dias limpos</span>
+                            </div>
+                            <p id="stat-goal-subtext" class="text-xs text-slate-300 mt-1">
+                                Marque cada dia vencido sem cigarro no calendário abaixo.
+                            </p>
+                        </div>
+
+                        <!-- Mini Card 1 Ano -->
+                        <div class="bg-obsidian-900/90 border border-emeraldpro-800/50 rounded-2xl px-3.5 py-2.5 text-right shrink-0">
+                            <div class="text-[10px] font-bold uppercase text-slate-400">Jornada 1 Ano</div>
+                            <div class="text-xl font-extrabold text-emeraldpro-400"><span id="stat-total-days">0</span><span id="stat-year-total" class="text-xs text-slate-500">/365</span></div>
+                            <div id="stat-money-mini" class="text-[11px] font-bold text-goldpro-400 mt-0.5">R$ 0,00</div>
+                        </div>
+                    </div>
+                <!-- Seletor Dinâmico de Início da Jornada (1 Ano / 12 Meses Automáticos) -->
+                <div class="space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 bg-obsidian-900/90 border border-emeraldpro-900/50 rounded-2xl px-3.5 py-2.5">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="calendar-plus" class="w-4 h-4 text-emeraldpro-400 shrink-0"></i>
+                            <span class="text-xs font-bold text-slate-200">Início da sua jornada (1 Ano):</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <select id="start-month-select" onchange="handleStartPeriodChange()" class="bg-obsidian-950 border border-emeraldpro-800/60 text-white text-xs font-extrabold rounded-xl px-2.5 py-1.5 outline-none focus:border-emeraldpro-400">
+                                <option value="1">Janeiro</option>
+                                <option value="2">Fevereiro</option>
+                                <option value="3">Março</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Maio</option>
+                                <option value="6">Junho</option>
+                                <option value="7">Julho</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                            <select id="start-year-select" onchange="handleStartPeriodChange()" class="bg-obsidian-950 border border-emeraldpro-800/60 text-white text-xs font-extrabold rounded-xl px-2.5 py-1.5 outline-none focus:border-emeraldpro-400">
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Carrossel Horizontal dos 12 Meses Gerados Automaticamente -->
+                    <div id="months-tabs-scroller" class="flex items-center gap-2 overflow-x-auto bg-obsidian-900 p-1.5 rounded-2xl border border-emeraldpro-900/40">
+                        <!-- Preenchido dinamicamente via JS para os 12 meses -->
+                    </div>
+
+                    <!-- Card do Calendário Ativo -->
+                    <div id="calendar-wrapper" class="glass-card rounded-3xl p-4 sm:p-5 relative overflow-hidden">
+                        <!-- Cabeçalho do Mês Selecionado com Setas de Navegação -->
+                        <div class="flex items-center justify-between mb-4 gap-2">
+                            <div class="flex items-center gap-2">
+                                <button onclick="navigateMonth(-1)" id="btn-prev-month" class="w-8 h-8 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-emeraldpro-900/50 text-slate-300 flex items-center justify-center disabled:opacity-30">
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                </button>
+                                <div>
+                                    <div class="flex items-center gap-1.5">
+                                        <h3 id="cal-month-title" class="text-base sm:text-lg font-extrabold text-white">Mês 1</h3>
+                                        <span id="cal-month-badge" class="text-[10px] font-black px-2 py-0.5 rounded-md bg-emeraldpro-500/15 text-emeraldpro-400 border border-emeraldpro-500/30">Mês 1/12</span>
+                                    </div>
+                                    <p id="cal-month-subtitle" class="text-xs text-emeraldpro-400">O Começo da Liberdade</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="cal-month-counter" class="text-xs font-extrabold px-3 py-1 rounded-full bg-emeraldpro-500/15 text-emeraldpro-400 border border-emeraldpro-500/30">
+                                    0 / 30 dias
+                                </span>
+                                <button onclick="navigateMonth(1)" id="btn-next-month" class="w-8 h-8 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-emeraldpro-900/50 text-slate-300 flex items-center justify-center disabled:opacity-30">
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dias da Semana -->
+                        <div class="grid grid-cols-7 gap-1.5 mb-2">
+                            <div class="text-center text-[11px] font-bold text-slate-400">Dom</div>
+                            <div class="text-center text-[11px] font-bold text-slate-400">Seg</div>
+                            <div class="text-center text-[11px] font-bold text-slate-400">Ter</div>
+                            <div class="text-center text-[11px] font-bold text-slate-400">Qua</div>
+                            <div class="text-center text-[11px] font-bold text-slate-400">Qui</div>
+                            <div class="text-center text-[11px] font-bold text-slate-400">Sex</div>
+                            <div class="text-center text-[11px] font-bold text-slate-400">Sáb</div>
+                        </div>
+
+                        <!-- Grade dos Dias -->
+                        <div id="cal-days-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+                            <!-- Preenchido via JS -->
+                        </div>
+
+                        <!-- Legenda -->
+                        <div class="mt-4 pt-3 border-t border-emeraldpro-900/40 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                            <div class="flex items-center gap-3">
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-emeraldpro-500 inline-block"></span> Limpo</span>
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-goldpro-400 inline-block"></span> Marco</span>
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500/80 inline-block"></span> Deslize</span>
+                            </div>
+                            <span id="cal-preview-hint" class="text-goldpro-400 font-semibold flex items-center gap-1">
+                                <i data-lucide="lock" class="w-3 h-3"></i> Dias 4+ no Plano PRO
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card de Chamada para Ação (Visível apenas no modo gratuito) -->
+                <div id="calendar-upsell-card" onclick="openPaywallModal('calendar_card')" class="glass-gold rounded-3xl p-5 cursor-pointer hover:brightness-105 transition-all">
+                    <div class="flex items-start gap-3.5">
+                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-goldpro-400 to-amber-600 text-obsidian-950 flex items-center justify-center shrink-0 shadow-lg">
+                            <i data-lucide="crown" class="w-6 h-6"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-extrabold text-white text-sm">Desbloqueie 1 Ano Inteiro Vitalício</h4>
+                                <span id="upsell-price-tag" class="text-xs font-black bg-goldpro-400 text-obsidian-950 px-2.5 py-0.5 rounded-full">
+                                    R$ 50,00
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                                Pagamento Único • Uso Vitalício: pague uma única vez e libere todos os 12 meses (365 dias) da sua jornada, mensagens diárias de Deus e Nossa Senhora, diário e conquistas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ========================================================== -->
+            <!-- ABA 2: SAÚDE & CONQUISTAS                                  -->
+            <!-- ========================================================== -->
+            <section id="view-health" class="hidden space-y-5">
+                <div class="glass-card rounded-3xl p-5">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-400 flex items-center justify-center border border-rose-500/20">
+                            <i data-lucide="heart-pulse" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-extrabold text-white">Regeneração do Corpo</h2>
+                            <p class="text-xs text-slate-400">Evolução biológica comprovada a cada dia limpo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Marcos de Saúde -->
+                <div id="health-milestones-container" class="space-y-3">
+                    <!-- Renderizado via JS -->
+                </div>
+            </section>
+
+            <!-- ========================================================== -->
+            <!-- ABA 3: ECONOMIA & METAS PESSOAIS                           -->
+            <!-- ========================================================== -->
+            <section id="view-finance" class="hidden space-y-5">
+                <!-- Card Principal de Economia -->
+                <div class="bg-gradient-to-br from-emeraldpro-700 via-emeraldpro-800 to-obsidian-900 rounded-3xl p-6 border border-emeraldpro-400/30 shadow-xl">
+                    <span class="text-xs font-bold uppercase tracking-wider text-emeraldpro-200">Dinheiro Livre do Cigarro</span>
+                    <div id="fin-total-saved" class="text-4xl font-black text-white mt-1 tracking-tight">R$ 0,00</div>
+                    <p id="fin-projection-text" class="text-xs text-emeraldpro-100/90 mt-2">
+                        Em 30 dias você economizará R$ 360,00!
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-emeraldpro-400/20">
+                        <div>
+                            <span class="text-[11px] text-emeraldpro-200 block">Cigarros Evitados</span>
+                            <strong id="fin-cigs-avoided" class="text-lg font-extrabold text-white">0 unid.</strong>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-emeraldpro-200 block">Vida Recuperada</span>
+                            <strong id="fin-life-gained" class="text-lg font-extrabold text-goldpro-300">0 horas</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configurações de Consumo -->
+                <div class="glass-card rounded-3xl p-5 space-y-4">
+                    <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-emeraldpro-400"></i>
+                        Seu Perfil de Consumo Anterior
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Preço do Maço (R$)</label>
+                            <input type="number" id="input-pack-price" step="0.50" min="1" value="12.00"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-emeraldpro-800/60 text-white font-bold text-sm focus:border-emeraldpro-400 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Cigarros fumados por dia</label>
+                            <input type="number" id="input-cigs-day" min="1" max="100" value="20"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-emeraldpro-800/60 text-white font-bold text-sm focus:border-emeraldpro-400 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meta / Sonho de Compra com a Economia (Recurso PRO) -->
+                <div class="glass-card rounded-3xl p-5 space-y-4 relative">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                            <i data-lucide="gift" class="w-4 h-4 text-goldpro-400"></i>
+                            Minha Recompensa com o Dinheiro
+                        </h3>
+                        <span class="pro-tag text-[10px] font-black px-2 py-0.5 rounded bg-goldpro-400/20 text-goldpro-400 border border-goldpro-400/30">PRO</span>
+                    </div>
+
+                    <div id="reward-goal-box" class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input type="text" id="input-reward-name" placeholder="Ex: Tênis novo, Jantar, Viagem..." value="Jantar Especial de Vitória"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-emeraldpro-800/60 text-white text-xs font-semibold focus:border-goldpro-400 outline-none">
+                            <input type="number" id="input-reward-cost" placeholder="Valor (R$)" value="250"
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-obsidian-950 border border-emeraldpro-800/60 text-white text-xs font-bold focus:border-goldpro-400 outline-none">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-bold mb-1">
+                                <span id="reward-label" class="text-slate-300">Jantar Especial de Vitória</span>
+                                <span id="reward-pct" class="text-goldpro-400">0%</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-obsidian-950 rounded-full overflow-hidden">
+                                <div id="reward-bar" class="h-full bg-gradient-to-r from-goldpro-500 to-amber-300 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================== -->
+            <!-- ABA 4: LICENÇA PRO / ATIVAÇÃO & BACKUP                     -->
+            <!-- ========================================================== -->
+            <section id="view-license" class="hidden space-y-5">
+
+                <!-- Status da Licença Atual -->
+                <div id="license-status-card" class="glass-gold rounded-3xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-wider text-goldpro-400 flex items-center gap-1.5">
+                            <i data-lucide="key-round" class="w-4 h-4"></i>
+                            Status da Sua Licença
+                        </span>
+                        <span id="license-pill" class="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-500/20 text-goldpro-300 border border-goldpro-400/40">
+                            VERSÃO GRATUITA (PRÉVIA)
+                        </span>
+                    </div>
+
+                    <h2 id="license-title" class="text-xl font-black text-white">
+                        Desbloqueie o LivreFumo PRO Vitalício
+                    </h2>
+                    <p id="license-desc" class="text-xs text-slate-300 leading-relaxed">
+                        Adquira sua licença única e tenha acesso ilimitado para sempre a todos os meses, diário emocional, conquistas de saúde e calculadora de metas.
+                    </p>
+
+                    <!-- Botão de Compra Direta (Google Play / Checkout) -->
+                    <div id="license-buy-actions" class="pt-2 space-y-3">
+                        <button onclick="openPaywallModal('license_tab')" class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-goldpro-400 to-amber-500 hover:from-goldpro-300 hover:to-amber-400 text-obsidian-950 font-black text-sm shadow-lg shadow-amber-950/60 flex items-center justify-center gap-2 transition-all active:scale-98">
+                            <i data-lucide="crown" class="w-5 h-5"></i>
+                            <span>PAGAMENTO ÚNICO • USO VITALÍCIO (<span class="dynamic-price">R$ 50,00</span>)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ativação Manual por Chave (Para clientes que compram via Pix / WhatsApp / Link) -->
+                <div id="manual-activation-card" class="glass-card rounded-3xl p-5 space-y-4">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                            <i data-lucide="ticket-check" class="w-4 h-4 text-emeraldpro-400"></i>
+                            Já comprou? Ative sua Chave Vitalícia
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Insira o código de liberação enviado após a confirmação do seu pagamento único.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-2.5">
+                        <input type="text" id="activation-code-input" placeholder="Ex: LFPRO-XXXX-VITAL" uppercase
+                            class="flex-1 px-4 py-3 rounded-xl bg-obsidian-950 border border-emeraldpro-700/60 text-white font-mono font-bold text-sm uppercase tracking-wider focus:border-goldpro-400 outline-none">
+                        <button onclick="activateWithKey()" class="px-5 py-3 rounded-xl bg-emeraldpro-600 hover:bg-emeraldpro-500 text-white font-extrabold text-xs uppercase tracking-wider transition-all active:scale-95">
+                            Ativar Agora
+                        </button>
+                    </div>
+
+                    <div class="pt-2 border-t border-emeraldpro-900/40 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Precisa de ajuda ou suporte?</span>
+                        <button onclick="contactSupport()" class="text-emeraldpro-400 font-bold hover:underline flex items-center gap-1">
+                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Falar com Suporte
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Backup e Segurança dos Dados -->
+                <div class="glass-card rounded-3xl p-5 space-y-3">
+                    <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <i data-lucide="database-backup" class="w-4 h-4 text-sky-400"></i>
+                        Backup & Segurança do Progresso
+                    </h3>
+                    <p class="text-xs text-slate-400">
+                        Salve uma cópia do seu calendário ou restaure em um novo aparelho Android.
+                    </p>
+                    <div class="grid grid-cols-2 gap-2.5 pt-1">
+                        <button onclick="exportBackup()" class="py-2.5 px-3 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5">
+                            <i data-lucide="download" class="w-4 h-4 text-emeraldpro-400"></i> Exportar Dados
+                        </button>
+                        <label class="py-2.5 px-3 rounded-xl bg-obsidian-900 hover:bg-obsidian-800 border border-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i data-lucide="upload" class="w-4 h-4 text-sky-400"></i> Restaurar Backup
+                            <input type="file" id="import-backup-input" accept=".json" onchange="importBackup(event)" class="hidden">
+                        </label>
+                    </div>
+                    <div class="pt-2">
+                        <button onclick="openResetModal()" class="w-full py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-bold transition-colors">
+                            Zerar todo o calendário e recomeçar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Acesso Discreto ao Painel do Criador / Vendedor -->
+                <div class="text-center pt-2 pb-4">
+                    <button onclick="openAdminAuthModal()" class="text-[11px] text-slate-500 hover:text-slate-300 transition-colors inline-flex items-center gap-1">
+                        <i data-lucide="lock-keyhole" class="w-3 h-3"></i>
+                        <span>Área do Criador / Gerador de Licenças</span>
+                    </button>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- ============================================================== -->
+        <!-- BARRA DE NAVEGAÇÃO INFERIOR NATIVA (BOTTOM NAVIGATION)         -->
+        <!-- ============================================================== -->
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-obsidian-900/95 backdrop-blur-xl border-t border-emeraldpro-900/50 z-40 nav-safe">
+            <div class="grid grid-cols-4 py-2 px-2">
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-item flex flex-col items-center justify-center py-1.5 rounded-xl text-emeraldpro-400 transition-colors">
+                    <i data-lucide="calendar-check-2" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[11px] font-bold">Calendário</span>
+                </button>
+                <button onclick="switchTab('health')" id="nav-health" class="nav-item flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-200 transition-colors">
+                    <i data-lucide="heart-pulse" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[11px] font-semibold">Saúde</span>
+                </button>
+                <button onclick="switchTab('finance')" id="nav-finance" class="nav-item flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-200 transition-colors">
+                    <i data-lucide="piggy-bank" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[11px] font-semibold">Economia</span>
+                </button>
+                <button onclick="switchTab('license')" id="nav-license" class="nav-item flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-200 transition-colors relative">
+                    <span id="nav-pro-dot" class="absolute top-1.5 right-6 w-2 h-2 rounded-full bg-goldpro-400 animate-ping"></span>
+                    <i data-lucide="crown" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[11px] font-semibold">Licença PRO</span>
+                </button>
+            </div>
+        </nav>
+
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- MODAL 1: PAYWALL PROFISSIONAL (PAGAMENTO ÚNICO VITALÍCIO)          -->
+    <!-- ================================================================== -->
+    <div id="paywall-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-obsidian-900 border border-goldpro-400/30 rounded-t-3xl sm:rounded-3xl max-w-md w-full p-6 shadow-2xl animate-pop max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black bg-goldpro-400/20 text-goldpro-400 border border-goldpro-400/30">
+                    <i data-lucide="crown" class="w-3.5 h-3.5"></i> PAGAMENTO ÚNICO • VITALÍCIO
+                </span>
+                <button onclick="closePaywallModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <h2 class="text-2xl font-black text-white leading-tight">
+                Conquiste seus 30 Dias e Transforme sua Saúde
+            </h2>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                Desbloqueie agora o acesso completo ao <strong>LivreFumo PRO</strong>. Sem assinaturas, sem cobranças mensais — pague uma vez e use para sempre.
+            </p>
+
+            <!-- Lista de Benefícios -->
+            <div class="my-5 space-y-2.5 bg-obsidian-950/80 p-4 rounded-2xl border border-emeraldpro-900/50">
+                <div class="flex items-center gap-2.5 text-xs text-slate-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emeraldpro-400 shrink-0"></i>
+                    <span>Calendário completo de <strong>1 Ano (12 meses / 365 dias)</strong></span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-slate-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emeraldpro-400 shrink-0"></i>
+                    <span><strong>365 Bênçãos de Deus e Nossa Senhora</strong> a cada dia conquistado</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-slate-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emeraldpro-400 shrink-0"></i>
+                    <span><strong>Todas as 10 Medalhas de Saúde</strong> e regeneração pulmonar</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-slate-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emeraldpro-400 shrink-0"></i>
+                    <span><strong>Diário Emocional</strong> e registro detalhado de cada dia vencido</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-slate-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emeraldpro-400 shrink-0"></i>
+                    <span><strong>Todas as 8 Medalhas de Saúde</strong> e regeneração pulmonar</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-slate-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emeraldpro-400 shrink-0"></i>
+                    <span><strong>Metas de Recompensa</strong> com o dinheiro economizado</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-slate-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emeraldpro-400 shrink-0"></i>
+                    <span><strong>Licença Vitalícia</strong> (menos que 2 maços de cigarro!)</span>
+                </div>
+            </div>
+
+            <!-- Caixa de Preço -->
+            <div class="glass-gold rounded-2xl p-4 flex items-center justify-between mb-4">
+                <div>
+                    <span class="text-[11px] text-slate-300 line-through">De R$ 119,90</span>
+                    <div class="text-2xl font-black text-white dynamic-price">R$ 50,00</div>
+                    <span class="text-[11px] font-semibold text-goldpro-300">Pagamento Único • Uso Vitalício</span>
+                </div>
+                <div class="text-right">
+                    <span class="inline-block px-2.5 py-1 rounded-lg bg-emeraldpro-500/20 text-emeraldpro-400 text-[11px] font-extrabold border border-emeraldpro-500/30">
+                        58% OFF HOJE
+                    </span>
+                </div>
+            </div>
+
+            <!-- Botão Principal: Google Play Billing / Checkout -->
+            <button onclick="processGooglePlayPurchase()" id="btn-google-play-buy" class="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-emeraldpro-500 to-emeraldpro-600 hover:from-emeraldpro-400 hover:to-emeraldpro-500 text-white font-black text-sm shadow-xl shadow-emeraldpro-950 flex items-center justify-center gap-2 transition-all active:scale-98">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                <span>LIBERAR USO VITALÍCIO (<span class="dynamic-price">R$ 50,00</span>)</span>
+            </button>
+
+            <!-- Opção 2: Já comprou via Pix/Link e tem a Chave -->
+            <div class="mt-3 text-center">
+                <button onclick="goToKeyActivation()" class="text-xs font-bold text-goldpro-400 hover:underline">
+                    Já comprou via Pix/Link? Inserir Chave de Ativação →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- MODAL 2: REGISTRO DO DIA (LIMPO / DESLIZE / ANOTAÇÃO)              -->
+    <!-- ================================================================== -->
+    <div id="day-detail-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-obsidian-900 border border-emeraldpro-800/60 rounded-3xl max-w-sm w-full p-6 shadow-2xl animate-pop">
+            <div class="flex items-center justify-between mb-3">
+                <span id="day-modal-date-label" class="text-xs font-extrabold uppercase tracking-wider text-emeraldpro-400">
+                    18 de Novembro de 2026
+                </span>
+                <button onclick="closeDayModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <h3 class="text-lg font-extrabold text-white mb-4">Como foi este dia?</h3>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button onclick="setDayStatus('clean')" id="btn-status-clean" class="p-3.5 rounded-2xl border-2 border-emeraldpro-500 bg-emeraldpro-500/15 text-white flex flex-col items-center gap-1.5 transition-all">
+                    <i data-lucide="check-circle-2" class="w-6 h-6 text-emeraldpro-400"></i>
+                    <span class="text-xs font-extrabold">Dia Limpo!</span>
+                </button>
+                <button onclick="setDayStatus('slip')" id="btn-status-slip" class="p-3.5 rounded-2xl border border-slate-700 bg-obsidian-950 text-slate-300 hover:border-rose-500/50 flex flex-col items-center gap-1.5 transition-all">
+                    <i data-lucide="cloud-rain" class="w-6 h-6 text-rose-400"></i>
+                    <span class="text-xs font-bold">Tive um deslize</span>
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Diário Rápido / Gatilhos (Opcional):</label>
+                <textarea id="day-note-input" rows="2" placeholder="Ex: Senti vontade após o café, mas bebi água e passou!"
+                    class="w-full p-3 rounded-xl bg-obsidian-950 border border-slate-700 text-xs text-white focus:border-emeraldpro-400 outline-none resize-none"></textarea>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="clearDayStatus()" class="px-3.5 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700">
+                    Limpar Dia
+                </button>
+                <button onclick="viewCurrentDayBlessing()" class="px-3.5 py-2.5 rounded-xl bg-goldpro-500/20 border border-goldpro-400/40 text-goldpro-300 text-xs font-extrabold hover:bg-goldpro-500/30">
+                    Ver Bênção
+                </button>
+                <button onclick="saveDayNoteAndClose()" class="flex-1 py-2.5 rounded-xl bg-emeraldpro-600 hover:bg-emeraldpro-500 text-white text-xs font-extrabold">
+                    Salvar Registro
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- MODAL 2B: BÊNÇÃO & MOTIVAÇÃO DE DEUS E NOSSA SENHORA (DIA VENCIDO) -->
+    <!-- ================================================================== -->
+    <div id="blessing-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[55] hidden items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-obsidian-900 via-obsidian-900 to-obsidian-950 border border-goldpro-400/45 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-pop relative overflow-hidden">
+            <!-- Brilho Celestial de Fundo -->
+            <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-goldpro-400/15 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex items-center justify-between mb-4 relative z-10">
+                <span id="blessing-day-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black bg-goldpro-400/20 text-goldpro-300 border border-goldpro-400/40">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> VITÓRIA DO DIA 1
+                </span>
+                <button onclick="closeBlessingModal()" class="w-8 h-8 rounded-full bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="text-center space-y-2 mb-5 relative z-10">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-goldpro-400 to-amber-600 text-obsidian-950 flex items-center justify-center shadow-lg shadow-amber-950/60">
+                    <i data-lucide="sun" class="w-8 h-8"></i>
+                </div>
+                <h3 id="blessing-date-title" class="text-lg font-black text-white">Dia Conquistado com Graça!</h3>
+                <p class="text-xs text-emeraldpro-400 font-semibold">Uma palavra de luz para fortalecer sua caminhada hoje</p>
+            </div>
+
+            <!-- Cartão de Mensagem de Deus -->
+            <div class="bg-obsidian-950/90 border border-emeraldpro-500/30 rounded-2xl p-4 mb-3 relative z-10">
+                <div class="flex items-center gap-2 text-xs font-extrabold text-emeraldpro-400 uppercase tracking-wider mb-1.5">
+                    <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+                    <span>Palavra de Deus para Você</span>
+                </div>
+                <p id="blessing-god-text" class="text-xs sm:text-sm text-slate-100 leading-relaxed italic">
+                    "Filho(a), Eu segurei a tua mão hoje e te dei forças para vencer..."
+                </p>
+            </div>
+
+            <!-- Cartão de Mensagem de Nossa Senhora -->
+            <div class="bg-obsidian-950/90 border border-sky-400/30 rounded-2xl p-4 mb-5 relative z-10">
+                <div class="flex items-center gap-2 text-xs font-extrabold text-sky-300 uppercase tracking-wider mb-1.5">
+                    <i data-lucide="shield" class="w-4 h-4"></i>
+                    <span>Manto de Nossa Senhora</span>
+                </div>
+                <p id="blessing-mary-text" class="text-xs sm:text-sm text-slate-100 leading-relaxed italic">
+                    "Meu filho(a) amado(a), cubro tua mente e teus pulmões com o meu manto de paz..."
+                </p>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="flex gap-2.5 relative z-10">
+                <button onclick="copyBlessingMessage()" class="flex-1 py-3 px-4 rounded-2xl bg-obsidian-800 hover:bg-obsidian-700 border border-slate-700 text-slate-200 text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all">
+                    <i data-lucide="copy" class="w-4 h-4 text-goldpro-400"></i>
+                    <span>Copiar Oração</span>
+                </button>
+                <button onclick="closeBlessingModal()" class="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-emeraldpro-500 to-emeraldpro-600 hover:from-emeraldpro-400 hover:to-emeraldpro-500 text-white text-xs font-black shadow-lg flex items-center justify-center gap-1.5 transition-all">
+                    <span>Amém! Seguir Firme</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- MODAL 3: SOS FISSURA (RESPIRAÇÃO GUIADA 4-7-8)                     -->
+    <!-- ================================================================== -->
+    <div id="sos-modal" class="fixed inset-0 bg-obsidian-950/95 backdrop-blur-xl z-50 hidden flex-col items-center justify-center p-6 text-center">
+        <button onclick="closeSosModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-800/80 text-slate-300 hover:text-white flex items-center justify-center">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
+        <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-extrabold border border-rose-500/30 mb-3">
+            MODO SOS • A VONTADE PASSA EM 3 MINUTOS
+        </span>
+        <h2 class="text-2xl font-black text-white mb-2">Respire Comigo</h2>
+        <p class="text-xs text-slate-400 max-w-xs mb-8">
+            Siga o ritmo do círculo para acalmar o sistema nervoso e eliminar a fissura imediatamente.
+        </p>
+
+        <!-- Círculo Animado -->
+        <div class="relative w-48 h-48 flex items-center justify-center my-4">
+            <div id="breath-circle" class="breath-circle w-32 h-32 rounded-full bg-gradient-to-tr from-emeraldpro-600 to-sky-500 shadow-2xl shadow-emeraldpro-500/40 flex items-center justify-center">
+                <span id="breath-instruction" class="text-sm font-black text-white uppercase tracking-wider px-2">
+                    Inspire...
+                </span>
+            </div>
+        </div>
+
+        <p id="breath-sub" class="text-xs font-semibold text-emeraldpro-400 mt-6 mb-8">
+            Puxe o ar profundamente pelo nariz (4 segundos)
+        </p>
+
+        <div class="max-w-xs w-full bg-obsidian-900/90 border border-slate-800 rounded-2xl p-4 text-left space-y-2 text-xs text-slate-300">
+            <p><strong class="text-emeraldpro-400">1.</strong> Beba um copo cheio de água gelada agora.</p>
+            <p><strong class="text-emeraldpro-400">2.</strong> Mude de ambiente por 2 minutos.</p>
+            <p><strong class="text-emeraldpro-400">3.</strong> Lembre-se: a fissura é apenas um alarme falso.</p>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- MODAL 4: PAINEL SECRETO DO CRIADOR / VENDEDOR (GERADOR DE CHAVES)  -->
+    <!-- ================================================================== -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[60] hidden items-center justify-center p-4">
+        <div class="bg-obsidian-900 border border-sky-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-pop max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                        <i data-lucide="terminal" class="w-4 h-4"></i>
+                    </span>
+                    <div>
+                        <h3 class="text-base font-black text-white">Painel do Vendedor / Criador</h3>
+                        <p class="text-[11px] text-sky-400">Controle de Licenças & Configurações</p>
+                    </div>
+                </div>
+                <button onclick="closeAdminModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Tela de Login Admin -->
+            <div id="admin-login-view" class="space-y-4">
+                <p class="text-xs text-slate-300">
+                    Digite a senha de administrador para gerar chaves de liberação para seus clientes e testar o app.
+                    <br><span class="text-[11px] text-slate-500">(Senha padrão configurada: <code class="text-sky-400">ADMIN2026</code>)</span>
+                </p>
+                <input type="password" id="admin-password-input" placeholder="Senha do Criador"
+                    class="w-full px-4 py-3 rounded-xl bg-obsidian-950 border border-slate-700 text-white text-sm font-bold focus:border-sky-400 outline-none">
+                <button onclick="verifyAdminPassword()" class="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-xs uppercase tracking-wider">
+                    Entrar no Painel
+                </button>
+            </div>
+
+            <!-- Tela Interna do Painel Vendedor -->
+            <div id="admin-dashboard-view" class="hidden space-y-5">
+                
+                <!-- 1. Gerador de Chaves de Liberação para Clientes -->
+                <div class="bg-obsidian-950 p-4 rounded-2xl border border-emeraldpro-500/30 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold text-emeraldpro-400 uppercase">1. Gerar Chave Vitalícia p/ Cliente</span>
+                        <span class="text-[10px] text-slate-400">Funciona Offline</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">
+                        Quando um cliente comprar com você (Pix, Link ou Loja), gere uma chave abaixo e envie para ele ativar o app:
+                    </p>
+                    <div class="flex gap-2">
+                        <input type="text" id="generated-key-display" readonly value="LFPRO-2026-8841"
+                            class="flex-1 px-3 py-2.5 rounded-xl bg-obsidian-900 border border-emeraldpro-700 text-goldpro-400 font-mono font-black text-sm text-center select-all">
+                        <button onclick="copyGeneratedKey()" class="px-3.5 py-2.5 rounded-xl bg-emeraldpro-600 text-white text-xs font-bold hover:bg-emeraldpro-500">
+                            Copiar
+                        </button>
+                    </div>
+                    <button onclick="generateNewLicenseKey()" class="w-full py-2.5 rounded-xl bg-emeraldpro-500/15 hover:bg-emeraldpro-500/25 border border-emeraldpro-500/40 text-emeraldpro-300 text-xs font-extrabold">
+                        + Gerar Nova Chave Única
+                    </button>
+                </div>
+
+                <!-- 2. Simulador Instantâneo (Testar Bloqueado vs Liberado) -->
+                <div class="bg-obsidian-950 p-4 rounded-2xl border border-goldpro-400/30 space-y-3">
+                    <span class="text-xs font-extrabold text-goldpro-400 uppercase block">2. Simular Visão do Cliente (Testes)</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="adminSetProState(false)" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-600">
+                            🔒 Modo Gratuito (Bloqueado)
+                        </button>
+                        <button onclick="adminSetProState(true)" class="py-2.5 px-3 rounded-xl bg-goldpro-500/20 hover:bg-goldpro-500/30 text-goldpro-300 text-xs font-bold border border-goldpro-400/40">
+                            👑 Modo PRO (Liberado)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Configurações Comerciais (Preço, Checkout e WhatsApp) -->
+                <div class="bg-obsidian-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+                    <span class="text-xs font-extrabold text-sky-400 uppercase block">3. Configurações de Venda</span>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Preço Exibido (Ex: R$ 50,00)</label>
+                        <input type="text" id="admin-price-input" value="R$ 50,00"
+                            class="w-full px-3 py-2 rounded-xl bg-obsidian-900 border border-slate-700 text-white text-xs font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Link de Checkout Externo (Opcional - se vazio usa fluxo Google Play):</label>
+                        <input type="url" id="admin-checkout-url" placeholder="https://pay.seu-link.com/livrefumo"
+                            class="w-full px-3 py-2 rounded-xl bg-obsidian-900 border border-slate-700 text-white text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Seu WhatsApp de Suporte (com DDD, só números):</label>
+                        <input type="text" id="admin-whatsapp-input" placeholder="5511999999999" value="5511999999999"
+                            class="w-full px-3 py-2 rounded-xl bg-obsidian-900 border border-slate-700 text-white text-xs">
+                    </div>
+                    <button onclick="saveAdminSettings()" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-extrabold">
+                        Salvar Configurações Comerciais
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Reset -->
+    <div id="reset-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-obsidian-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl animate-pop">
+            <h3 class="text-lg font-extrabold text-white mb-2">Zerar todo o calendário?</h3>
+            <p class="text-xs text-slate-400 mb-5 leading-relaxed">
+                Isso apagará os dias marcados e anotações. Sua licença PRO vitalícia continuará ativa normalmente.
+            </p>
+            <div class="flex gap-2 justify-end">
+                <button onclick="closeResetModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">Cancelar</button>
+                <button onclick="confirmReset()" class="px-4 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-extrabold">Sim, Zerar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- LÓGICA COMPLETA DO APLICATIVO (JAVASCRIPT MODULAR & SEM ERROS)      -->
+    <!-- ================================================================== -->
+    <script>
+        // ------------------------------------------------------------------
+        // 1. GERADOR DINÂMICO DE 1 ANO (12 MESES) + MENSAGENS ESPIRITUAIS
+        // ------------------------------------------------------------------
+        const MONTH_NAMES_PT = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',

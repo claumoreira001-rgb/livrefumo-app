@@ -1,0 +1,20 @@
+{
+  "name": "LivreFumo 365 Dias - Desafio Sem Cigarro",
+  "short_name": "LivreFumo",
+  "description": "Calendário interativo de 1 ano para parar de fumar com mensagens diárias de fé e acompanhamento de saúde.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#10b981",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
